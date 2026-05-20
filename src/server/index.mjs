@@ -3,7 +3,7 @@
 /**
  * Reasonix MCP Server — stdio transport
  *
- * Exposes 6 MCP tools for the host agent (e.g. Kimi Code):
+ * Exposes 6 MCP tools for any MCP-compatible host agent:
  *   - reasonix_start_task    → { job_id }   (async, returns immediately)
  *   - reasonix_get_status    → { phase, progress, touchedFiles, ... }
  *   - reasonix_get_result    → { output, touchedFiles, ... }
@@ -92,7 +92,7 @@ Kimi Code determines the model tier:
           type: "string",
           enum: ["deepseek-v4-flash", "deepseek-v4-pro"],
           description:
-            "Model tier. Kimi Code judges task complexity and chooses. flash for simple, pro for complex.",
+            "Model tier. The host agent judges task complexity and chooses. flash for simple, pro for complex.",
         },
         cwd: {
           type: "string",

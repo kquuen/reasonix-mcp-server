@@ -8,10 +8,10 @@ api_key = "sk-your-deepseek-api-key-here"
 # DeepSeek API base URL (默认为 https://api.deepseek.com)
 # base_url = "https://api.deepseek.com"
 
-# Model name for deepseek-v4-flash tasks (Kimi Code 判断的简单任务)
+# Model name for flash-tier tasks (host agent judges as simple/well-scoped)
 # model_default = "deepseek-chat"
 
-# Model name for deepseek-v4-pro tasks (Kimi Code 判断的复杂任务)
+# Model name for pro-tier tasks (host agent judges as complex/cross-file)
 # model_pro = "deepseek-reasoner"
 
 # Worker timeout in milliseconds (default: 300000 = 5 min)

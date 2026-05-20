@@ -9,7 +9,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                              宿主 Agent                                  │
-│  (Kimi Code / Cursor / Claude Code / 任何 MCP 兼容客户端)                │
+│  (Kimi Code / VS Code+Cline / Cursor / Claude Code / 任何 MCP 兼容客户端) │
 │                                                                         │
 │  职责：需求分析、任务拆解、模型选择、进度监控、结果审查、最终决策           │
 │  输入：用户需求                                                        │
@@ -118,7 +118,7 @@ rename          <jobId>.json.<pid>.tmp → <jobId>.json
 用户："把 src/utils.ts 中的 formatDate 函数重构为支持时区参数"
   │
   ▼
-宿主 Agent (Kimi Code)
+宿主 Agent (任意 MCP 兼容客户端)
   • 分析：单文件修改，范围明确 → model: flash
   • 构造 prompt，调用 reasonix_start_task
   │

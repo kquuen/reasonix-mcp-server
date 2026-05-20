@@ -1,6 +1,6 @@
 # Reasonix MCP Server
 
-**用便宜的模型干脏活，让贵的模型做大脑** — 一个基于 MCP 协议的模型编排层，让 Kimi Code 负责规划，让 DeepSeek 负责落地执行。
+**用便宜的模型干脏活，让贵的模型做大脑** — 一个基于 [MCP 协议](https://modelcontextprotocol.io) 的模型编排层，让宿主 Agent 负责规划，让 DeepSeek 负责落地执行。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
@@ -9,15 +9,42 @@
 
 ## 为什么要做这个
 
-用 Kimi Code 写代码的时候，我遇到一个很现实的问题：**token 消耗太大了**。
+用 AI 编程助手写代码的时候，我遇到一个很现实的问题：**token 消耗太大了**。
 
-Kimi 的能力确实强，做架构分析、拆解任务、审查代码都很出色。但问题是 — 它每次执行任务（读文件、改代码、跑测试）都要带着完整的上下文去推理，一轮一轮下来，token 账单涨得很快。而且执行过程中上下文越来越臃肿，经常"越改越偏"。
+强推理模型（如 GPT-4o、Kimi k1.5 等）做架构分析、拆解任务、审查代码都很出色。但问题是 — 它们每次执行具体动作（读文件、改代码、跑测试）都要带着完整的上下文去推理，一轮一轮下来，token 账单涨得很快。而且执行过程中上下文越来越臃肿，经常"越改越偏"。
 
-与此同时，DeepSeek 的 API 价格要低得多，而且它的**缓存命中率特别高** — 重复出现的上下文 token 几乎不花钱。但它的工具调用能力和代码执行精准度，在复杂场景下不如 Kimi。
+与此同时，DeepSeek 的 API 价格要低得多，而且它的**缓存命中率特别高** — 重复出现的上下文 token 几乎不花钱。但它的工具调用能力和代码执行精准度，在复杂场景下不如顶级推理模型。
 
-所以我做了这个 Reasonix MCP Server：**让 Kimi 做它最擅长的事 — 全流程规划、任务拆解、结果审查；让 DeepSeek 做它性价比高的事 — 读文件、改代码、跑测试这些"脏活累活"**。通过模型分层调度，把 Kimi 的 token 消耗压到最低，把 DeepSeek 的成本优势发挥到极致。
+所以我做了这个 Reasonix MCP Server：**让强推理模型做它最擅长的事 — 全流程规划、任务拆解、结果审查；让 DeepSeek 做它性价比高的事 — 读文件、改代码、跑测试这些"脏活累活"**。通过模型分层调度，把强推理模型的 token 消耗压到最低，把 DeepSeek 的成本优势发挥到极致。
 
-这就是一次**能力互补的编排**：Kimi 是大脑，DeepSeek 是手脚。
+这就是一次**能力互补的编排**：强推理模型是大脑，DeepSeek 是手脚。
+
+---
+
+## 兼容性 — 任何支持 MCP 的客户端都能用
+
+Reasonix MCP Server 是一个**标准的 MCP 服务器**，遵循 [Model Context Protocol](https://modelcontextprotocol.io) 规范，通过 **stdio 传输层** 与宿主 Agent 通信。
+
+这意味着：**只要你的编程工具支持 MCP，就能接入 Reasonix。**
+
+### 已验证兼容的客户端
+
+| 客户端 | 配置方式 | 状态 |
+|--------|----------|------|
+| **Kimi Code** | `mcp.json` 配置文件 | ✅ 已验证 |
+| **VS Code + Cline** | MCP 设置面板 | ✅ 协议兼容 |
+| **Cursor** | `.cursor/mcp.json` | ✅ 协议兼容 |
+| **Claude Code** | `CLAUDE.md` 或启动参数 | ✅ 协议兼容 |
+| **任何自定义 MCP 客户端** | stdio 启动 | ✅ 协议兼容 |
+
+### MCP 协议合规性
+
+- ✅ JSON-RPC 2.0 over stdio
+- ✅ MCP `initialize` / `tools/list` / `tools/call` 生命周期
+- ✅ 标准 `shutdown` / `exit` 消息处理
+- ✅ 无客户端专属硬编码（所有 tool description 均为通用表述）
+
+> 如果你的客户端支持 MCP 但列表里没提到，欢迎提 Issue 补充。
 
 ---
 
@@ -25,9 +52,10 @@ Kimi 的能力确实强，做架构分析、拆解任务、审查代码都很出
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  宿主 Agent (Kimi Code / Cursor / 其他 MCP 客户端)            │
+│  宿主 Agent (Kimi Code / VS Code+Cline / Cursor / Claude    │
+│  Code / 任何 MCP 兼容客户端)                                  │
 │  ─────────────────────────────────────                       │
-│  • 需求分析 → 任务拆解 → 复杂度判断                            │
+│  • 需求分析 → 任务拆解 → 复杂度判断 → 选择模型 tier             │
 │  • 调用 reasonix_start_task 下发任务                          │
 │  • 轮询 reasonix_get_status 查看进度                          │
 │  • 通过 reasonix_get_result 获取结果并审查                     │
@@ -88,15 +116,15 @@ fs.renameSync(tmp, filePath);   // 原子操作，不会留下半残文件
 
 ### 🔥 4. 模型分层调度 — 省钱的精髓
 
-这是整个设计的核心。**Kimi 做规划，DeepSeek 做执行；复杂任务用 pro，简单任务用 flash。**
+这是整个设计的核心。**强推理模型做规划，DeepSeek 做执行；复杂任务用 pro，简单任务用 flash。**
 
 具体编排逻辑：
 
 | 环节 | 谁来做 | 为什么 |
 |------|--------|--------|
-| 需求分析、任务拆解、架构判断 | **Kimi** | 强推理能力，理解复杂业务逻辑 |
-| 读文件、搜代码、改文件、跑测试 | **DeepSeek** | 价格便宜，缓存命中率高，重复 token 几乎免费 |
-| 结果审查、风险评估、最终决策 | **Kimi** | 综合判断能力强，不容易被忽悠 |
+| 需求分析、任务拆解、架构判断 | **宿主 Agent**（强推理模型） | 强推理能力，理解复杂业务逻辑 |
+| 读文件、搜代码、改文件、跑测试 | **DeepSeek Worker** | 价格便宜，缓存命中率高，重复 token 几乎免费 |
+| 结果审查、风险评估、最终决策 | **宿主 Agent**（强推理模型） | 综合判断能力强，不容易被忽悠 |
 
 DeepSeek 内部也有分层：
 
@@ -107,11 +135,11 @@ DeepSeek 内部也有分层：
 
 **成本对比（粗略估算）**：
 
-- 一个中等复杂度的重构任务，如果全程用 Kimi 执行，可能需要 50K~100K token
-- 同样的任务，Kimi 只做规划和审查（约 5K~10K token），DeepSeek 做执行（约 20K~30K token，且大量命中缓存）
+- 一个中等复杂度的重构任务，如果全程用强推理模型执行，可能需要 50K~100K token
+- 同样的任务，宿主只做规划和审查（约 5K~10K token），DeepSeek 做执行（约 20K~30K token，且大量命中缓存）
 - **整体成本可以降到原来的 1/5 ~ 1/10**
 
-而且因为 Worker 运行在独立进程中，Kimi 的上下文始终保持干净 — 不会因为执行过程中的工具调用结果而膨胀。规划时的思路清晰，审查时的判断准确。
+而且因为 Worker 运行在独立进程中，宿主 Agent 的上下文始终保持干净 — 不会因为执行过程中的工具调用结果而膨胀。规划时的思路清晰，审查时的判断准确。
 
 这不是简单的"传个参数调模型"。这是一个**有意识的成本架构设计**：把贵的能力用在刀刃上，把便宜的能力用在重复劳动上。
 
@@ -156,6 +184,12 @@ DeepSeek 内部也有分层：
 
 ## 快速开始
 
+### 前置要求
+
+- **Node.js >= 18.0.0**（需要原生 `fetch`）
+- **DeepSeek API Key**（注册即送额度）
+- **任意支持 MCP 的编程工具**（Kimi Code、VS Code+Cline、Cursor、Claude Code 等）
+
 ### 1. 克隆与进入目录
 
 ```bash
@@ -179,17 +213,33 @@ cp config.toml.example .reasonix/config.toml
 export DEEPSEEK_API_KEY="sk-..."
 ```
 
-### 3. 启动 Server
+### 3. 启动 Server（手动测试）
 
 ```bash
 node src/server/index.mjs
 ```
 
-Server 通过 stdio 监听 JSON-RPC 消息。
+Server 通过 stdio 监听 JSON-RPC 消息。正常情况下你不需要手动启动 — 宿主 Agent 会自动 spawn 它。
 
-### 4. 宿主 Agent 接入
+### 4. 在宿主 Agent 中配置 MCP
 
-在 Kimi Code 等支持 MCP 的客户端中配置：
+**Kimi Code** — 编辑 `mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "reasonix": {
+      "command": "node",
+      "args": ["/path/to/reasonix-mcp-server/src/server/index.mjs"],
+      "env": {
+        "DEEPSEEK_API_KEY": "sk-your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+**VS Code + Cline** — 在 Cline 设置中添加 MCP Server：
 
 ```json
 {
@@ -201,6 +251,27 @@ Server 通过 stdio 监听 JSON-RPC 消息。
   }
 }
 ```
+
+**Cursor** — 编辑 `~/.cursor/mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "reasonix": {
+      "command": "node",
+      "args": ["/path/to/reasonix-mcp-server/src/server/index.mjs"]
+    }
+  }
+}
+```
+
+**Claude Code** — 启动时指定：
+
+```bash
+claude --mcp-server "node /path/to/reasonix-mcp-server/src/server/index.mjs"
+```
+
+> 配置完成后重启宿主 Agent，它会自动发现 `reasonix_start_task` 等 6 个工具。
 
 ---
 
@@ -225,7 +296,7 @@ Server 通过 stdio 监听 JSON-RPC 消息。
 reasonix-mcp-server/
 ├── src/
 │   ├── server/
-│   │   └── index.mjs         ← MCP stdio 网关
+│   │   └── index.mjs         ← MCP stdio 网关（客户端无关）
 │   ├── worker/
 │   │   └── index.mjs         ← 后台任务执行器
 │   ├── core/
