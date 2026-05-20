@@ -23,7 +23,7 @@ import path from "node:path";
 import { spawn, spawnSync, execSync } from "node:child_process";
 
 import { fileURLToPath } from "node:url";
-import { loadConfig } from "../core/config.mjs";
+import { loadConfig, loadRuntimeConfig } from "../core/config.mjs";
 import { buildAdversarialReviewPrompt, parseReviewOutput } from "../core/review.mjs";
 import {
   generateJobId,
@@ -222,6 +222,20 @@ function handleStartTask(args, config) {
   const prompt = (args.prompt || "").trim();
   if (!prompt) {
     return { error: "prompt is required", isError: true };
+  }
+
+  // Lazy-load runtime config (API key) on first use.
+  // This keeps server startup + tools/list fast (< 5ms).
+  if (!config._runtimeLoaded) {
+    config._runtimeLoaded = true;
+    const runtime = loadRuntimeConfig(config);
+    if (!runtime.apiKey) {
+      return {
+        error: "DEEPSEEK_API_KEY not configured. Run 'reasonix register' or set DEEPSEEK_API_KEY env var.",
+        isError: true,
+      };
+    }
+    Object.assign(config, runtime);
   }
 
   const jobId = generateJobId();

@@ -21,6 +21,19 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "bin": {
+    "reasonix": "./bin/reasonix.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "hooks/",
+    "agents/",
+    "examples/",
+    "config.toml.example",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "node src/server/index.mjs",
     "test:ping": "echo '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}' | node src/server/index.mjs | head -c 500"

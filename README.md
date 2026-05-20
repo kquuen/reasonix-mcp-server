@@ -182,96 +182,58 @@ DeepSeek 内部也有分层：
 
 ---
 
-## 快速开始
+## 快速开始 — 一键插拔
 
 ### 前置要求
 
 - **Node.js >= 18.0.0**（需要原生 `fetch`）
-- **DeepSeek API Key**（注册即送额度）
-- **任意支持 MCP 的编程工具**（Kimi Code、VS Code+Cline、Cursor、Claude Code 等）
+- **DeepSeek API Key**（[注册即送额度](https://platform.deepseek.com)）
 
-### 1. 克隆与进入目录
-
-```bash
-git clone https://github.com/kquuen/reasonix-mcp-server.git
-cd reasonix-mcp-server
-```
-
-### 2. 配置 API Key
-
-方式 A — 配置文件（推荐）：
+### 1. 安装
 
 ```bash
-mkdir -p .reasonix
-cp config.toml.example .reasonix/config.toml
-# 编辑 .reasonix/config.toml，填入你的 DeepSeek API Key
+npm install -g @reasonix/mcp-server
 ```
 
-方式 B — 环境变量：
+### 2. 注册（自动检测 + 写入配置）
 
 ```bash
-export DEEPSEEK_API_KEY="sk-..."
+reasonix register
 ```
 
-### 3. 启动 Server（手动测试）
+CLI 会自动检测你机器上安装的 MCP 客户端（Kimi Code / Cursor / Claude Code / 项目级 `.mcp.json`），并将 Reasonix 条目写入它们的配置文件。API Key 优先从 `DEEPSEEK_API_KEY` 环境变量读取，没有则交互式询问。
+
+### 3. 验证
 
 ```bash
-node src/server/index.mjs
+reasonix setup
 ```
 
-Server 通过 stdio 监听 JSON-RPC 消息。正常情况下你不需要手动启动 — 宿主 Agent 会自动 spawn 它。
+检查 Node 版本、API Key 配置、DeepSeek API 连通性。三项全绿即可用。
 
-### 4. 在宿主 Agent 中配置 MCP
+### 4. 使用
 
-**Kimi Code** — 编辑 `mcp.json`：
-
-```json
-{
-  "mcpServers": {
-    "reasonix": {
-      "command": "node",
-      "args": ["/path/to/reasonix-mcp-server/src/server/index.mjs"],
-      "env": {
-        "DEEPSEEK_API_KEY": "sk-your-api-key-here"
-      }
-    }
-  }
-}
+```
+跟 AI 说「用 Reasonix 调查这个 bug」
+或直接调用 reasonix_start_task
+或 spawn reasonix-rescue 子代理后台跑
 ```
 
-**VS Code + Cline** — 在 Cline 设置中添加 MCP Server：
+> **完成了！** 不需要 clone 仓库、不需要手动编辑 JSON、不需要重启测试。  
+> `reasonix unregister` 一键移除；`reasonix status` 查看注册状态。
 
-```json
-{
-  "mcpServers": {
-    "reasonix": {
-      "command": "node",
-      "args": ["/path/to/reasonix-mcp-server/src/server/index.mjs"]
-    }
-  }
-}
-```
+### CLI 命令速查
 
-**Cursor** — 编辑 `~/.cursor/mcp.json`：
+| 命令 | 功能 |
+|------|------|
+| `reasonix register` | 自动检测客户端并写入 MCP 配置 |
+| `reasonix unregister` | 从所有客户端中移除 Reasonix |
+| `reasonix status` | 查看各客户端的注册状态 |
+| `reasonix setup` | 检查环境（Node/API Key/连通性） |
 
-```json
-{
-  "mcpServers": {
-    "reasonix": {
-      "command": "node",
-      "args": ["/path/to/reasonix-mcp-server/src/server/index.mjs"]
-    }
-  }
-}
-```
+### 手动配置（备选）
 
-**Claude Code** — 启动时指定：
-
-```bash
-claude --mcp-server "node /path/to/reasonix-mcp-server/src/server/index.mjs"
-```
-
-> 配置完成后重启宿主 Agent，它会自动发现 `reasonix_start_task` 等 6 个工具。
+如果你更愿意手动配置，参考 `examples/` 目录下的客户端配置示例，或阅读 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)。
 
 ---
 

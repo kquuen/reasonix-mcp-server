@@ -111,7 +111,9 @@ claude --mcp-server "node /path/to/reasonix-mcp-server/src/server/index.mjs"
 
 ## 通用接入步骤（适用于任何客户端）
 
-无论用什么工具，接入 Reasonix 的步骤都一样：
+> **推荐方式：** `reasonix register` 一键自动检测并配置所有已安装的 MCP 客户端。详见 [README 快速开始](../README.md#快速开始--一键插拔)。
+
+如果 `reasonix register` 未覆盖你的客户端，或者你偏好手动配置，步骤如下：
 
 ### Step 1: 准备环境
 

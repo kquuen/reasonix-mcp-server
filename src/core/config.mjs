@@ -143,3 +143,43 @@ export function loadConfig(cwd) {
 
   return config;
 }
+
+/**
+ * Load runtime-sensitive config (API key, model settings) on first use.
+ *
+ * Called lazily by handleStartTask — NOT at server startup.
+ * This keeps `tools/list` response time < 5ms (no file I/O, no API calls).
+ */
+export function loadRuntimeConfig(staticConfig) {
+  const projectRoot = staticConfig.projectRoot;
+
+  // Re-read TOML for API key (may have been set after server start)
+  const projToml = loadToml(path.join(projectRoot, ".reasonix", "config.toml"));
+
+  const thisFileDir = path.dirname(fileURLToPath(import.meta.url));
+  const serverDir = path.resolve(thisFileDir, "..", "..");
+  const serverToml = loadToml(path.join(serverDir, ".reasonix", "config.toml"));
+
+  const toml = { ...projToml, ...serverToml };
+
+  const runtime = {
+    apiKey: staticConfig.apiKey || "",
+    baseUrl: staticConfig.baseUrl,
+    modelDefault: staticConfig.modelDefault,
+    modelPro: staticConfig.modelPro,
+    maxTokens: staticConfig.maxTokens,
+    maxTokensPro: staticConfig.maxTokensPro,
+  };
+
+  // TOML overrides
+  if (toml["reasonix.api_key"] && !runtime.apiKey) runtime.apiKey = String(toml["reasonix.api_key"]);
+  if (toml["reasonix.base_url"]) runtime.baseUrl = String(toml["reasonix.base_url"]);
+  if (toml["reasonix.model_default"]) runtime.modelDefault = String(toml["reasonix.model_default"]);
+  if (toml["reasonix.model_pro"]) runtime.modelPro = String(toml["reasonix.model_pro"]);
+
+  // Environment variables (highest priority)
+  if (process.env.DEEPSEEK_API_KEY) runtime.apiKey = process.env.DEEPSEEK_API_KEY;
+  if (process.env.DEEPSEEK_BASE_URL) runtime.baseUrl = process.env.DEEPSEEK_BASE_URL;
+
+  return runtime;
+}
