@@ -1,0 +1,42 @@
+name: Bug Report
+ description: 报告一个 bug
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 清晰描述发生了什么
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 如何重现这个问题
+      placeholder: |
+        1. 启动 Server
+        2. 调用 reasonix_start_task，prompt 为 ...
+        3. 调用 reasonix_get_result，job_id 为 ...
+        4. 观察到 ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你期望发生什么
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息
+      description: 操作系统、Node 版本等
+      value: |
+        - OS: 
+        - Node.js: 
+        - Reasonix MCP Server 版本: 
+    validations:
+      required: false

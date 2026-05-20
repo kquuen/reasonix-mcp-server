@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "reasonix": {
+      "command": "node",
+      "args": [
+        "/path/to/reasonix-mcp-server/src/server/index.mjs"
+      ],
+      "env": {
+        "DEEPSEEK_API_KEY": "sk-your-api-key-here"
+      }
+    }
+  }
+}

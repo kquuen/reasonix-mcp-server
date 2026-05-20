@@ -1,0 +1,6 @@
+node_modules/
+.reasonix/jobs/
+.reasonix/config.toml
+*.log
+*.tmp
+.DS_Store

@@ -1,0 +1,27 @@
+# Reasonix MCP Server Configuration
+# Copy this file to .reasonix/config.toml in your project root and fill in your settings.
+
+[reasonix]
+# DeepSeek API key (也可以设置环境变量 DEEPSEEK_API_KEY)
+api_key = "sk-your-deepseek-api-key-here"
+
+# DeepSeek API base URL (默认为 https://api.deepseek.com)
+# base_url = "https://api.deepseek.com"
+
+# Model name for deepseek-v4-flash tasks (Kimi Code 判断的简单任务)
+# model_default = "deepseek-chat"
+
+# Model name for deepseek-v4-pro tasks (Kimi Code 判断的复杂任务)
+# model_pro = "deepseek-reasoner"
+
+# Worker timeout in milliseconds (default: 300000 = 5 min)
+# worker_timeout_ms = 300000
+
+# Max output tokens for flash model (default: 8192)
+# max_tokens = 8192
+
+# Max output tokens for pro model (default: 16384, higher for reasoning overhead)
+# max_tokens_pro = 16384
+
+# Server log level: debug | info | warn | error (default: info)
+# server_log_level = "info"
