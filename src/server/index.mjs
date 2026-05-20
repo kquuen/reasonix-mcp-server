@@ -78,7 +78,7 @@ const MCP_TOOLS = [
 Use this when you need Reasonix to investigate, implement, fix, or refactor code.
 The task runs asynchronously — poll with reasonix_get_status, collect with reasonix_get_result.
 
-Kimi Code determines the model tier:
+The host agent determines the model tier:
   - deepseek-v4-flash: for simple/well-scoped tasks
   - deepseek-v4-pro: for complex cross-file tasks needing stronger reasoning`,
     inputSchema: {
